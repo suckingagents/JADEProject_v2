@@ -23,7 +23,7 @@ import jadeagents.Msg.RobotInform;
 public class World extends GuiAgent {
 
 	static final int TIME_LAPSE = 1000;
-	static final int robotDelta = -10;
+	static final int robotDelta = -6;
 	static final int roomDelta = 1;
 	static final int startRange = 50;
 	static final int maxRange = 255;
@@ -101,10 +101,11 @@ public class World extends GuiAgent {
 					map.put(tmpMsg.room, value);
 					robotMap.put(tmpMsg.robot, tmpMsg.room);
 					// check if robot needs to vacate his room
+					
 					if (cleanRooms.contains(tmpMsg.room)){
 						// tell robot to vacate
 						Room newRoomForRobot = queue.poll();
-						System.out.println(tmpMsg.robot + " will be asked to go to: " + newRoomForRobot.stringTest);
+						//System.out.println(tmpMsg.robot + " will be asked to go to: " + newRoomForRobot.stringTest);
 						msg = new ACLMessage(ACLMessage.INFORM);
 						msg.addReceiver(new AID(tmpMsg.robot, AID.ISLOCALNAME));
 						Msg.WorldInform msgToRobot = new Msg.WorldInform();
@@ -117,6 +118,7 @@ public class World extends GuiAgent {
 							e.printStackTrace();
 						}
 					}
+					
 				}	
 			}
 			block(1000);
@@ -133,7 +135,7 @@ public class World extends GuiAgent {
 		protected void onTick() {
 			String room;
 			int value;
-			System.out.print(new Date(System.currentTimeMillis()) + ": Updated values: ");
+			String strout = new Date(System.currentTimeMillis()) + ": Updated values: ";
 			for (Entry<String, Integer> entry : map.entrySet()){
 				room = entry.getKey();
 				value = entry.getValue();
@@ -142,9 +144,9 @@ public class World extends GuiAgent {
 					value = maxRange;
 				}
 				map.put(room, value);
-				System.out.print(map.get(room)+"\t");
+				strout += map.get(room)+"\t";
 			}
-			System.out.println("");
+			//System.out.println(strout);
 			
 			stats = new Statistic(map);
 			System.out.println(new Date(System.currentTimeMillis()) + ": avg:\tq1:\tmedian:\tq3:");
@@ -157,7 +159,8 @@ public class World extends GuiAgent {
 				room = entry.getKey();
 				value = entry.getValue();
 				queue.add(new  Room(value, room));
-				if (value < Math.abs(robotDelta)*2){ // Robot has nothing to do
+				//if (value < Math.abs(robotDelta)*2){ // Robot has nothing to do
+				if (value < stats.median){ // Robot has nothing to do
 					cleanRooms.add(room);
 				}
 			}

@@ -11,6 +11,7 @@ import jade.lang.acl.UnreadableException;
 import jadeagents.Msg.WorldInform;
 
 public class Robot extends Agent {
+	static final int ROOM_CHANGE_WAIT = 4*World.TIME_LAPSE;
 	String name, room;
 	Msg.RobotInform inform;
 	protected void setup(){
@@ -27,8 +28,10 @@ public class Robot extends Agent {
 	}
 	
 	class Listen extends CyclicBehaviour {
+		long t0;
 		public Listen(Agent a){
 			super(a);
+			t0 = System.currentTimeMillis();
 		}
 
 		@Override
@@ -44,9 +47,12 @@ public class Robot extends Agent {
 				
 				if (myObject instanceof Msg.WorldInform) {
 					// When we receive this, change room
-					Msg.WorldInform info = (Msg.WorldInform) myObject;
-					room = info.room;
-					System.err.println(name + " changed to " + room);
+					if (System.currentTimeMillis() - t0 > ROOM_CHANGE_WAIT){
+						t0 = System.currentTimeMillis();
+						Msg.WorldInform info = (Msg.WorldInform) myObject;
+						System.err.println(name + " changed from " + room + "to " + info.room);
+						room = info.room;
+					}
 				}
 			}
 			block(1000);
@@ -71,7 +77,7 @@ public class Robot extends Agent {
 			try {
 				msg.setContentObject(inform);
 				send(msg);
-				System.out.println(name + " cleaning " + room);
+				//System.out.println(name + " cleaning " + room);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
