@@ -3,20 +3,25 @@ import java.util.PriorityQueue;
 import java.util.Random;
  
 public class Room implements Comparable<Room> {
-        int dustlevel = 0;
-        String stringTest = "";
-        int robots = 0;
+        int dustlevel;
+        String name = "";
+        int robots;
        
-        public Room(int value, String text) {
+        public Room(int value, String text, int robots) {
                 this.dustlevel = value;
-                this.stringTest = text;
+                this.name = text;
                 this.robots = robots;
         }
        
+        public int getCompareVal(){
+        	//System.out.println(name + " has " + robots + " robots which makes compare value: " + dustlevel/(robots+1));
+        	return dustlevel/(robots + 1);
+        }
+        
         public int compareTo(Room r1) {
-                if(dustlevel >= r1.dustlevel) {                	
+                if(getCompareVal() >= r1.getCompareVal()) {                	
                         return -1;
-                } else if (dustlevel <= r1.dustlevel) {
+                } else if (getCompareVal() <= r1.getCompareVal()) {
                         return 1;
                 } else {
                         return 0;

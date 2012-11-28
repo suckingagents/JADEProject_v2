@@ -8,7 +8,6 @@ import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
-import jadeagents.Msg.WorldInform;
 
 public class Robot extends Agent {
 	static final int ROOM_CHANGE_WAIT = 4*World.TIME_LAPSE;
@@ -47,10 +46,10 @@ public class Robot extends Agent {
 				
 				if (myObject instanceof Msg.WorldInform) {
 					// When we receive this, change room
-					if (System.currentTimeMillis() - t0 > ROOM_CHANGE_WAIT){
+					if (System.currentTimeMillis() - t0 > 0){
 						t0 = System.currentTimeMillis();
 						Msg.WorldInform info = (Msg.WorldInform) myObject;
-						System.err.println(name + " changed from " + room + "to " + info.room);
+						System.err.println(name + " changed from " + room + " to " + info.room);
 						room = info.room;
 					}
 				}

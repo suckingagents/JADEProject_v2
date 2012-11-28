@@ -1,12 +1,18 @@
 package jadeagents;
 
+import jade.core.Agent;
+import jade.gui.GuiEvent;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -14,8 +20,12 @@ import javax.swing.border.EmptyBorder;
 
 public class Gui extends JFrame {
 	JPanel pane;
+	JButton addRobotBtn, removeRobotBtn;
+	JLabel statusLbl;
 	public HashMap<String, GuiRoom> roomMap;
-	public Gui(){
+	World world;
+	public Gui(World w){
+		world = w;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(500, 300);
 		
@@ -25,24 +35,50 @@ public class Gui extends JFrame {
 		getContentPane().add(pane, BorderLayout.CENTER);
 		
 		roomMap = new HashMap<String, GuiRoom>();
+		
+		addRobotBtn = new JButton("Add");
+		addRobotBtn.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				System.err.println("Adding Agent!");
+				world.addAgent();
+			}
+		});
+		removeRobotBtn = new JButton("Remove");
+		removeRobotBtn.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				System.err.println("Removing Agent!");
+				world.removeAgent();
+			}
+		});
+		
+		statusLbl = new JLabel("Status: ");
+		getContentPane().add(statusLbl, BorderLayout.NORTH);
+		getContentPane().add(addRobotBtn, BorderLayout.WEST);
+		getContentPane().add(removeRobotBtn, BorderLayout.EAST);
 		setVisible(true);
 	}
 	
-	public void updateRoomPanes(HashMap<String, Integer> map, HashMap<String, String> rmap){
-		String room, robot;
+	public void updateRoomPanes(HashMap<String, Room> map, HashMap<String, String> rmap){
+		String roomStr, robot;
+		Room room;
 		int value;
-		for (Map.Entry<String, Integer> entry : map.entrySet()){
-			room = entry.getKey();
-			value = entry.getValue();
-			updateRoomPane(room, value);
+		for (Map.Entry<String, Room> entry : map.entrySet()){
+			roomStr = entry.getKey();
+			room = entry.getValue();
+			value = room.dustlevel;
+			updateRoomPane(roomStr, value);
 		}
 		
 		for (Map.Entry<String, String> entry : rmap.entrySet()){
 			robot = entry.getKey();
-			room = entry.getValue();
-			value = Integer.parseInt(roomMap.get(room).robotAmountLbl.getText());
+			roomStr = entry.getValue();
+			value = Integer.parseInt(roomMap.get(roomStr).robotAmountLbl.getText());
 			value++;
-			roomMap.get(room).robotAmountLbl.setText(""+value);
+			roomMap.get(roomStr).robotAmountLbl.setText(""+value);
 		}
 	}
 	
