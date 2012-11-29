@@ -251,33 +251,34 @@ public class World extends GuiAgent {
 					if (rooms_dirty != null) {
 						
 						// Get the room that needs cleaning
-						String newRoomForRobot = null;
-						for (int room = 0; room < rooms_dirty.size(); room++) {
-							newRoomForRobot = rooms_dirty.get(room);
-							
-							// Determine which robot should be sent to the room
-							
-							// Method 4, round robin robots
-							if (next_robot >= robots.size() - 1) {
-								next_robot = 0;
-							} else {
-								next_robot++;
-							}
-							
-							String robotStr = robots.get(next_robot);
-							
-							// Send the robot a message with the new room to move to.
-							msg = new ACLMessage(ACLMessage.INFORM);
-							msg.addReceiver(new AID(robotStr, AID.ISLOCALNAME));
-							Msg.WorldInform msgToRobot = new Msg.WorldInform();
-							msgToRobot.robot = robotStr;
-							msgToRobot.room = newRoomForRobot;
-							try {
-								msg.setContentObject(msgToRobot);
-								send(msg);
-								//robotMap.put(msgToRobot.robot, msgToRobot.room);
-							} catch (IOException e) {
-								e.printStackTrace();
+						for (int room = 0; room < robots.size(); room++) {
+							if (queue.size() > 0) {
+								Room newRoomForRobot = queue.poll();
+								
+								// Determine which robot should be sent to the room
+								
+								// Method 4, round robin robots
+								if (next_robot >= robots.size() - 1) {
+									next_robot = 0;
+								} else {
+									next_robot++;
+								}
+								
+								String robotStr = robots.get(next_robot);
+								
+								// Send the robot a message with the new room to move to.
+								msg = new ACLMessage(ACLMessage.INFORM);
+								msg.addReceiver(new AID(robotStr, AID.ISLOCALNAME));
+								Msg.WorldInform msgToRobot = new Msg.WorldInform();
+								msgToRobot.robot = robotStr;
+								msgToRobot.room = newRoomForRobot.name;
+								try {
+									msg.setContentObject(msgToRobot);
+									send(msg);
+									//robotMap.put(msgToRobot.robot, msgToRobot.room);
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
 							}
 						}
 					}
@@ -333,7 +334,7 @@ public class World extends GuiAgent {
 				rooms_all.add(new  Room(value, roomStr, room.robots));
 				if (value < clean_threshold){ // Robot has nothing to do
 					rooms_clean.add(roomStr);
-				} else if (value > dirty_threshold & rooms_dirty.size() < 10) {
+				} else if (value > dirty_threshold) {
 					rooms_dirty.add(roomStr);
 				}
 			}
