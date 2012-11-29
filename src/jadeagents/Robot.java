@@ -6,6 +6,10 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
 
@@ -21,6 +25,22 @@ public class Robot extends Agent {
 			room = (String) args[0];
 		}
 		name = getLocalName();
+		
+		// register to DF
+		DFAgentDescription dfd = new DFAgentDescription();
+		dfd.setName( getAID() ); 
+		ServiceDescription sd = new ServiceDescription();
+		sd.setType( "Robot" );
+		sd.setName( getLocalName() );
+		dfd.addServices(sd);
+
+		try { 
+			DFService.register(this, dfd ); 
+		}
+		catch (FIPAException fe) { 
+			fe.printStackTrace(); 
+		}
+		
 		addBehaviour(new Ticker(this, World.TIME_LAPSE));
 		addBehaviour( new Listen(this));
 		System.out.println(name + " is alive! Position: " + room);

@@ -20,6 +20,10 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.gui.GuiAgent;
 import jade.gui.GuiEvent;
 import jade.lang.acl.ACLMessage;
@@ -252,7 +256,7 @@ public class World extends GuiAgent {
 						
 						// Get the room that needs cleaning
 						for (int room = 0; room < robots.size(); room++) {
-							if (queue.size() > 0) {
+							if (queue.size() > 0 && rooms_all.size() > 0) {
 								Room newRoomForRobot = queue.poll();
 								
 								// Determine which robot should be sent to the room
@@ -266,8 +270,41 @@ public class World extends GuiAgent {
 //								String robotStr = robots.get(next_robot);
 								
 								// Method 5, random robots
-								Random rand = new Random();
-								String robotStr = robots.get(rand.nextInt(robots.size()));
+//								Random rand = new Random();
+//								String robotStr = robots.get(rand.nextInt(robots.size()));
+								
+								// Method 6, closest robot, not implemented
+								
+								// Method 7, robot with least to do
+								ServiceDescription sd  = new ServiceDescription();
+								sd.setType( "Robot" );
+								DFAgentDescription dfd = new DFAgentDescription();
+								dfd.addServices(sd);
+								
+								DFAgentDescription[] result = null;
+								try {
+									result = DFService.search(w, dfd);
+								} catch (FIPAException e) {
+									e.printStackTrace();
+								}
+								
+								String robotStr = null;
+								int lowest_dustlevel = 255;
+								for (int i = 0; i < result.length; i++) {
+									String current_robot = result[i].getName().getLocalName();
+									String current_room = robotMap.get(current_robot);
+									int current_dust_level = 255;
+									for (int ii = 0; ii < rooms_all.size(); ii++){
+										if (rooms_all.get(ii).name.equals(current_room)) {
+											current_dust_level = rooms_all.get(ii).dustlevel;
+											break;
+										}
+									}
+									if (current_dust_level < lowest_dustlevel) {
+										robotStr = current_robot;
+										lowest_dustlevel = current_dust_level;
+									}
+								}
 								
 								// Send the robot a message with the new room to move to.
 								msg = new ACLMessage(ACLMessage.INFORM);
@@ -282,6 +319,7 @@ public class World extends GuiAgent {
 								} catch (IOException e) {
 									e.printStackTrace();
 								}
+								break;
 							}
 						}
 					}
