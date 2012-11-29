@@ -215,8 +215,17 @@ public class World extends GuiAgent {
 //						}
 						
 						// Method 2, a random room.
-						Random rand = new Random();
-						index = rand.nextInt(l.size());
+//						Random rand = new Random();
+//						index = rand.nextInt(l.size());
+						
+						// Method 3, the dirtiest room.
+						int max_dust = 0;
+						for (int i = 0; i < l.size(); i++) {
+							if (l.get(i).dustlevel > max_dust) {
+								max_dust = l.get(i).dustlevel;
+								index = i;
+							}
+						}
 						
 						
 						// Send the robot a message with the new room to move to.
