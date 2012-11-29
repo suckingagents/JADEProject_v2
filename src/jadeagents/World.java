@@ -7,10 +7,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Vector;
 
 import jade.core.AID;
@@ -44,6 +47,16 @@ public class World extends GuiAgent {
 	String name;
 	int roomAmount, robotAmount;
 	Statistic stats;
+	
+	// Method paramaters
+	Integer clean_threshold;
+	Integer dirty_threshold;
+	
+	// List for implementing the methods
+	ArrayList<String> rooms_clean;
+	ArrayList<String> rooms_dirty;
+	ArrayList<Room> rooms_all;
+	
 	protected void setup() {
 		name = getLocalName();
 		map = new HashMap<String, Room>();
@@ -67,8 +80,13 @@ public class World extends GuiAgent {
 			e1.printStackTrace();
 		}
 		
-		roomAmount = 30;
-		robotAmount = 7;
+		roomAmount = 50;
+		robotAmount = 10;
+		
+		// Method Parameters
+		clean_threshold = 25;
+		dirty_threshold = 200;
+		
 		String tmp;
 		Random rand = new Random();
 		Room tmpRoom;
@@ -166,27 +184,37 @@ public class World extends GuiAgent {
 					System.out.println(new Date(System.currentTimeMillis()) + ": avg:\tq1:\tmedian:\tq3:");
 					System.out.println(new Date(System.currentTimeMillis()) + ": "+stats.avg + "\t" + stats.q1 + "\t"+stats.median+ "\t" + stats.q3);
 					gui.statusLbl.setText("Status - Robots: " + robotAmount + " - Rooms: " + roomAmount + " - Avg: " + stats.avg + " - Q1: " + stats.q1 + " - Q2: " + stats.median + " - Q: " + stats.q3 + " - Sum: " + stats.sum + " / " + roomAmount * 255 + " - fillrate: " + ((stats.sum*100) / (roomAmount*255)) + "%" );
-					ArrayList<Room> l = stats.getSortedList(map);
-					// check if robot needs to vacate his room
-					if (cleanRooms != null && cleanRooms.contains(tmpMsg.room)){
-						// tell robot to vacate
+					//ArrayList<Room> l = stats.getSortedList(map);
+					
+					// The dumb paradigm
+					if (rooms_clean != null && rooms_clean.contains(tmpMsg.room)) {
+						// The robots current room is clean
+						
+						// Determining the new room the robot should move to
 						String newRoomForRobot = null;
-						for(int i = 0; i < l.size(); i++){
-							newRoomForRobot = l.get(i).name;
-							if (!fifo.contains(newRoomForRobot)){
-								fifo.add(newRoomForRobot);
-								//System.out.println("BREAK PÅ : " + i);
+						Integer index = 0;
+						// Method 1, the next room.
+						
+						// Get a list of rooms
+					    Set set = map.entrySet();
+					    Iterator it = set.iterator();
+					    ArrayList<Room> l = new ArrayList<Room>();
+					    while (it.hasNext()) {
+					      Map.Entry entry = (Map.Entry) it.next();
+					      l.add((Room) entry.getValue());
+					    }
+						
+						for (int i = 0; i < l.size(); i++) {
+							if (tmpMsg.room.equals(l.get(i).name)) {
+								index = i + 1;
+								if (index.equals(l.size())) {
+									index = 0;
+								}
 								break;
 							}
 						}
-						for(String s : fifo){
-							//System.out.println("FIFO: " + s);
-						}
-						// Try to pop
-						//System.out.println("room?: " + newRoomForRobot + " Length: " + fifo.size() + "Removed? " + removed);
 						
-						//System.out.println(tmpMsg.robot + " changes to room " + newRoomForRobot.name + " with level: " + newRoomForRobot.getCompareVal() + " / " + newRoomForRobot.dustlevel + " - Robots: " + newRoomForRobot.robots);
-						//System.out.println(tmpMsg.robot + " will be asked to go to: " + newRoomForRobot.stringTest);
+						newRoomForRobot = l.get(index).name;
 						msg = new ACLMessage(ACLMessage.INFORM);
 						msg.addReceiver(new AID(tmpMsg.robot, AID.ISLOCALNAME));
 						Msg.WorldInform msgToRobot = new Msg.WorldInform();
@@ -200,6 +228,40 @@ public class World extends GuiAgent {
 							e.printStackTrace();
 						}
 					}
+					
+//					// check if robot needs to vacate his room
+//					if (cleanRooms != null && cleanRooms.contains(tmpMsg.room)){
+//						// tell robot to vacate
+//						String newRoomForRobot = null;
+//						for(int i = 0; i < l.size(); i++){
+//							newRoomForRobot = l.get(i).name;
+//							if (!fifo.contains(newRoomForRobot)){
+//								fifo.add(newRoomForRobot);
+//								//System.out.println("BREAK PÅ : " + i);
+//								break;
+//							}
+//						}
+//						for(String s : fifo){
+//							//System.out.println("FIFO: " + s);
+//						}
+//						// Try to pop
+//						//System.out.println("room?: " + newRoomForRobot + " Length: " + fifo.size() + "Removed? " + removed);
+//						
+//						//System.out.println(tmpMsg.robot + " changes to room " + newRoomForRobot.name + " with level: " + newRoomForRobot.getCompareVal() + " / " + newRoomForRobot.dustlevel + " - Robots: " + newRoomForRobot.robots);
+//						//System.out.println(tmpMsg.robot + " will be asked to go to: " + newRoomForRobot.stringTest);
+//						msg = new ACLMessage(ACLMessage.INFORM);
+//						msg.addReceiver(new AID(tmpMsg.robot, AID.ISLOCALNAME));
+//						Msg.WorldInform msgToRobot = new Msg.WorldInform();
+//						msgToRobot.robot = tmpMsg.robot;
+//						msgToRobot.room = newRoomForRobot;
+//						try {
+//							msg.setContentObject(msgToRobot);
+//							send(msg);
+//							//robotMap.put(msgToRobot.robot, msgToRobot.room);
+//						} catch (IOException e) {
+//							e.printStackTrace();
+//						}
+//					}
 				}	
 				gui.updateRoomPanes(map, robotMap);
 			}
@@ -237,21 +299,37 @@ public class World extends GuiAgent {
 				fifo.removeFirst();
 			}
 			
-			// find out if robot room is dirty or robot needs to change room
-			cleanRooms = new ArrayList<String>(); 
-			queue = new PriorityQueue<Room>();
-			//Room room; String roomStr;
-			if (stats != null){
-				for (Entry<String, Room> entry : map.entrySet()){
-					roomStr = entry.getKey();
-					room = entry.getValue();
-					value = room.dustlevel;
-					queue.add(new  Room(value, roomStr, room.robots));
-					//System.out.println("QUEUE: " + room.name + " - robots : " + room.robots);
-					//if (value < Math.abs(robotDelta)*2){ // Robot has nothing to do
-					if (value < stats.median){ // Robot has nothing to do
-						cleanRooms.add(roomStr);
-					}
+//			// find out if robot room is dirty or robot needs to change room
+//			cleanRooms = new ArrayList<String>(); 
+//			queue = new PriorityQueue<Room>();
+//			//Room room; String roomStr;
+//			if (stats != null){
+//				for (Entry<String, Room> entry : map.entrySet()){
+//					roomStr = entry.getKey();
+//					room = entry.getValue();
+//					value = room.dustlevel;
+//					queue.add(new  Room(value, roomStr, room.robots));
+//					//System.out.println("QUEUE: " + room.name + " - robots : " + room.robots);
+//					//if (value < Math.abs(robotDelta)*2){ // Robot has nothing to do
+//					if (value < stats.median){ // Robot has nothing to do
+//						cleanRooms.add(roomStr);
+//					}
+//				}
+//			}
+			
+			// Fill up new lists for the methods
+			rooms_clean = new ArrayList<String>();
+			rooms_dirty = new ArrayList<String>();
+			rooms_all = new ArrayList<Room>();
+			for (Entry<String, Room> entry : map.entrySet()){
+				roomStr = entry.getKey();
+				room = entry.getValue();
+				value = room.dustlevel;
+				rooms_all.add(new  Room(value, roomStr, room.robots));
+				if (value < clean_threshold){ // Robot has nothing to do
+					rooms_clean.add(roomStr);
+				} else if (value > dirty_threshold) {
+					rooms_dirty.add(roomStr);
 				}
 			}
 			
