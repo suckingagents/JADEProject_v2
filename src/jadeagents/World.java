@@ -258,13 +258,16 @@ public class World extends GuiAgent {
 								// Determine which robot should be sent to the room
 								
 								// Method 4, round robin robots
-								if (next_robot >= robots.size() - 1) {
-									next_robot = 0;
-								} else {
-									next_robot++;
-								}
+//								if (next_robot >= robots.size() - 1) {
+//									next_robot = 0;
+//								} else {
+//									next_robot++;
+//								}
+//								String robotStr = robots.get(next_robot);
 								
-								String robotStr = robots.get(next_robot);
+								// Method 5, random robots
+								Random rand = new Random();
+								String robotStr = robots.get(rand.nextInt(robots.size()));
 								
 								// Send the robot a message with the new room to move to.
 								msg = new ACLMessage(ACLMessage.INFORM);
