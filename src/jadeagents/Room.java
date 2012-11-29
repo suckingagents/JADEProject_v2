@@ -15,7 +15,10 @@ public class Room implements Comparable<Room> {
        
         public int getCompareVal(){
         	//System.out.println(name + " has " + robots + " robots which makes compare value: " + dustlevel/(robots+1));
-        	return dustlevel/(robots + 1);
+        	//return dustlevel/(robots + 1);
+        	
+        	// Only use dustlevel to compare
+        	return dustlevel;
         }
         
         public int compareTo(Room r1) {
