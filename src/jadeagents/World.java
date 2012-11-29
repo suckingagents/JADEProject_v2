@@ -190,11 +190,6 @@ public class World extends GuiAgent {
 					if (rooms_clean != null && rooms_clean.contains(tmpMsg.room)) {
 						// The robots current room is clean
 						
-						// Determining the new room the robot should move to
-						String newRoomForRobot = null;
-						Integer index = 0;
-						// Method 1, the next room.
-						
 						// Get a list of rooms
 					    Set set = map.entrySet();
 					    Iterator it = set.iterator();
@@ -204,16 +199,27 @@ public class World extends GuiAgent {
 					      l.add((Room) entry.getValue());
 					    }
 						
-						for (int i = 0; i < l.size(); i++) {
-							if (tmpMsg.room.equals(l.get(i).name)) {
-								index = i + 1;
-								if (index.equals(l.size())) {
-									index = 0;
-								}
-								break;
-							}
-						}
+						// Determining the new room the robot should move to
+						String newRoomForRobot = null;
+						Integer index = 0;
 						
+						// Method 1, the next room.
+//						for (int i = 0; i < l.size(); i++) {
+//							if (tmpMsg.room.equals(l.get(i).name)) {
+//								index = i + 1;
+//								if (index.equals(l.size())) {
+//									index = 0;
+//								}
+//								break;
+//							}
+//						}
+						
+						// Method 2, a random room.
+						Random rand = new Random();
+						index = rand.nextInt(l.size());
+						
+						
+						// Send the robot a message with the new room to move to.
 						newRoomForRobot = l.get(index).name;
 						msg = new ACLMessage(ACLMessage.INFORM);
 						msg.addReceiver(new AID(tmpMsg.robot, AID.ISLOCALNAME));
