@@ -301,18 +301,23 @@ public class World extends GuiAgent {
 		}
 	}
 	
-	public void removeAgent(){
-		if (robotAmount > 0){
+	private boolean removedAgent(int i){
+		if (robotAmount > 0 && i >= 0){
 			AgentContainer c = getContainerController();
-			//add robots
-			Object [] args = new Object[1];
-	        args[0] = "room1";
 			try {
-				c.getAgent("robot"+robotAmount).kill();
+				c.getAgent("robot"+(robotAmount-i)).kill();
 			} catch (Exception e) {
-				e.printStackTrace();
+				return removedAgent(i+1);
 			}
 			robotAmount--;
+			return true;
+		}
+		return false;
+	}
+	
+	public void removeAgent(){
+		if (removedAgent(0)){
+			System.err.println("Agent killed!");
 		}
 	}
 }
