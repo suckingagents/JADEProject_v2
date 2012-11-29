@@ -1,5 +1,6 @@
 package jadeagents;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -25,13 +26,15 @@ import jade.wrapper.StaleProxyException;
 import jadeagents.Msg.RobotInform;
 
 public class World extends GuiAgent {
-
 	static final int TIME_LAPSE = 1000;
 	static final int robotDelta = -6;
 	static final int roomDelta = 1;
 	static final int startRange = 50;
 	static final int maxRange = 255;
 	
+	
+	static final String filepath = "D:/agent/";
+	String filename = filepath + "out.txt";
 	Gui gui;
 	ArrayList<String> cleanRooms;
 	PriorityQueue<Room> queue;
@@ -47,6 +50,23 @@ public class World extends GuiAgent {
 		robotMap = new HashMap<String, String>();
 		fifo = new LinkedList<String>();
 		gui = new Gui(this);
+		
+		// Create file
+		File f =new File(filename);
+		int k = 0;
+		while(f.exists()){
+			k++;
+			filename = filepath + "out" + k + ".txt";
+			f = new File(filename);
+		}
+		try {
+			f.createNewFile();
+			System.out.println("New data file created: " + filename);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		roomAmount = 30;
 		robotAmount = 7;
 		String tmp;
@@ -84,8 +104,10 @@ public class World extends GuiAgent {
 	}
 	
 	class Listen extends CyclicBehaviour {
-		public Listen(Agent a){
-			super(a);
+		World w;
+		public Listen(World w){
+			super(w);
+			this.w = w;
 		}
 
 		@Override
@@ -115,10 +137,10 @@ public class World extends GuiAgent {
 					for(String str : fifo){
 						if (str.equals(tmpMsg.room)){
 							removed = true;
-							System.err.println("Compare for removal: " + str + " vs " + tmpMsg.room + " " + removed + " LENGTH: " + fifo.size());
+							//System.err.println("Compare for removal: " + str + " vs " + tmpMsg.room + " " + removed + " LENGTH: " + fifo.size());
 							removed = false;
 							removed = fifo.remove(str);
-							System.err.println("WAS REMOVED: " + removed + " length: " + fifo.size()) ;
+							//System.err.println("WAS REMOVED: " + removed + " length: " + fifo.size()) ;
 							break;
 						}
 					}
@@ -140,10 +162,10 @@ public class World extends GuiAgent {
 							map.put(roo, tmpRoom);
 						}
 					}
-					stats = new Statistic(map);
+					stats = new Statistic(w);
 					System.out.println(new Date(System.currentTimeMillis()) + ": avg:\tq1:\tmedian:\tq3:");
 					System.out.println(new Date(System.currentTimeMillis()) + ": "+stats.avg + "\t" + stats.q1 + "\t"+stats.median+ "\t" + stats.q3);
-					gui.statusLbl.setText("Status - Robots: " + robotAmount + " - Rooms: " + roomAmount);
+					gui.statusLbl.setText("Status - Robots: " + robotAmount + " - Rooms: " + roomAmount + " - Avg: " + stats.avg + " - Q1: " + stats.q1 + " - Q2: " + stats.median + " - Q: " + stats.q3 + " - Sum: " + stats.sum + " / " + roomAmount * 255 + " - fillrate: " + ((stats.sum*100) / (roomAmount*255)) + "%" );
 					ArrayList<Room> l = stats.getSortedList(map);
 					// check if robot needs to vacate his room
 					if (cleanRooms != null && cleanRooms.contains(tmpMsg.room)){
@@ -153,15 +175,15 @@ public class World extends GuiAgent {
 							newRoomForRobot = l.get(i).name;
 							if (!fifo.contains(newRoomForRobot)){
 								fifo.add(newRoomForRobot);
-								System.out.println("BREAK PÅ : " + i);
+								//System.out.println("BREAK PÅ : " + i);
 								break;
 							}
 						}
 						for(String s : fifo){
-							System.out.println("FIFO: " + s);
+							//System.out.println("FIFO: " + s);
 						}
 						// Try to pop
-						System.out.println("room?: " + newRoomForRobot + " Length: " + fifo.size() + "Removed? " + removed);
+						//System.out.println("room?: " + newRoomForRobot + " Length: " + fifo.size() + "Removed? " + removed);
 						
 						//System.out.println(tmpMsg.robot + " changes to room " + newRoomForRobot.name + " with level: " + newRoomForRobot.getCompareVal() + " / " + newRoomForRobot.dustlevel + " - Robots: " + newRoomForRobot.robots);
 						//System.out.println(tmpMsg.robot + " will be asked to go to: " + newRoomForRobot.stringTest);
