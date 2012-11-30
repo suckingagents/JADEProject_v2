@@ -39,8 +39,8 @@ public class Statistic {
 		// Calculate room statistics
 		sum = 0;
 		if (list.size() > 0){
-			Collections.sort(list);
-			Collections.reverse(list);
+//			Collections.sort(list);
+//			Collections.reverse(list);
 			for(Room r : list){
 				sum += r.dustlevel;
 			}
